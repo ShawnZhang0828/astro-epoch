@@ -1,0 +1,7 @@
+Exhibition UI art (optional overrides)
+
+- For a closer match to Hubble flocculent spirals (e.g. NGC 4414), add:
+  spiral-galaxy-milky-way.jpg
+  and switch imports in ExhibitionMaps.tsx from galactic-center.jpg to that file for Local Group / Milky Way tiles.
+
+Current build uses planet-photos/galactic-center.jpg (NASA PIA08021) for Milky Way tiles and disk — see ../planet-photos/SOURCES.txt.

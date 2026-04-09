@@ -1,0 +1,51 @@
+{
+  "name": "astro-epoch",
+  "version": "1.0.0",
+  "description": "Astro Epoch — focus, Stardust, and your galaxy",
+  "author": "Astro Epoch",
+  "type": "module",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && electron-builder",
+    "preview": "electron-vite preview"
+  },
+  "dependencies": {
+    "active-win": "^8.2.1",
+    "date-fns": "^4.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "three": "^0.172.0",
+    "@react-three/fiber": "^8.17.10",
+    "@react-three/drei": "^9.117.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.172.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  },
+  "build": {
+    "appId": "com.astroepoch.app",
+    "productName": "Astro Epoch",
+    "directories": { "output": "release" },
+    "files": ["out/**/*", "package.json"],
+    "asar": true,
+    "asarUnpack": ["**/node_modules/active-win/**/*"],
+    "win": {
+      "sign": null,
+      "signAndEditExecutable": false,
+      "target": [
+        { "target": "dir", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "publish": null
+  }
+}

@@ -1,0 +1,42 @@
+Real astronomy photos in this folder (see each filename).
+
+Solar system
+- mercury.jpg — Mercury; Wikimedia Commons "Mercury in true color" (Mariner / MESSENGER class data).
+- venus.jpg — Venus; Wikimedia "Venus-real color".
+- earth.jpg — Earth; Wikimedia "The Earth seen from Apollo 17" (NASA).
+- mars.jpg — Mars; Wikimedia "OSIRIS Mars true color" (ESA).
+- jupiter.jpg — Jupiter; Wikimedia "Jupiter" (NASA/JPL).
+- saturn.jpg — Saturn; Wikimedia "Saturn during Equinox" (Cassini).
+- uranus.jpg — Uranus; Wikimedia "Uranus2" (Voyager 2).
+- neptune.jpg — Neptune; NASA images-assets PIA01492~thumb (Voyager 2).
+
+Milky Way & moons
+- orion-nebula.jpg — NASA images-assets PIA04934~thumb (Orion / Trapezium region).
+- coalsack.jpg — NASA images-assets PIA13118~thumb (dark nebula / infrared context).
+- galactic-center.jpg — NASA images-assets PIA08021~thumb (central Milky Way).
+- europa.jpg — Europa; Wikimedia "Europa-moon" (Galileo, NASA/JPL/DLR).
+
+Exoplanet skins (Exhibition + Market)
+- exo-k452-b.jpg — NASA Image and Video Library PIA19825 (~medium) Kepler-452b artist concept (NASA/Ames/JPL-Caltech).
+- exo-texture-01.jpg — PIA22192 Kepler-90 system (NASA/Ames/W. Stenzel).
+- exo-texture-02.jpg — PIA19363 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-texture-03.jpg — PIA13590 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-texture-04.jpg — PIA18836 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-texture-05.jpg — PIA20690 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-texture-06.jpg — PIA23849 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-hd10180.jpg — ESO eso1035a screen JPEG (CC BY 4.0) HD 10180 system; credit ESO/L. Calçada.
+- exo-t1-lineup.jpg — PIA21422 TRAPPIST-1 planet lineup (NASA/JPL-Caltech).
+- exo-t1-abstract.jpg — PIA21421 TRAPPIST-1 abstract concept (NASA/JPL-Caltech).
+- exo-t1-surface.jpg — PIA21423 TRAPPIST-1f surface concept (NASA/JPL-Caltech).
+- exo-pia15808.jpg — PIA15808 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia16869.jpg — PIA16869 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia17062.jpg — PIA17062 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia17487.jpg — PIA17487 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia19824.jpg — PIA19824 Kepler-452b “Soaking up the Rays…” artist concept (NASA/Ames/JPL-Caltech/T. Pyle).
+- exo-pia20052.jpg — PIA20052 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia21424.jpg — PIA21424 TRAPPIST-1 habitable zone graphic (NASA/JPL-Caltech).
+- exo-pia21590.jpg — PIA21590 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia22087.jpg — PIA22087 WASP-18b artist concept (NASA/GSFC).
+- exo-pia22261.jpg — PIA22261 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia22588.jpg — PIA22588 exoplanet artist concept (NASA/JPL-Caltech).
+- exo-pia23175.jpg — PIA23175 exoplanet artist concept (NASA/JPL-Caltech).
