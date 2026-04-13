@@ -145,12 +145,26 @@ button {
 }
 
 .nav-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
   color: var(--muted);
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
+}
+
+.nav-link__icon {
+  width: 1.28rem;
+  height: 1.28rem;
+  flex-shrink: 0;
+  opacity: 0.82;
+}
+
+.nav-link:hover .nav-link__icon,
+.nav-link.active .nav-link__icon {
+  opacity: 1;
 }
 
 .nav-link:hover {
@@ -439,6 +453,28 @@ th {
   border-radius: 14px;
   padding: 1.5rem;
   max-width: 400px;
+}
+
+/* Focus page: dim only the main column, not the sidebar; slightly smaller dialogs */
+.modal-backdrop.modal-backdrop--main {
+  left: var(--sidebar-width);
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.modal-backdrop.modal-backdrop--main .planet-modal--carousel {
+  max-width: min(640px, calc(100vw - var(--sidebar-width) - 2.5rem));
+  width: min(92%, calc(100vw - var(--sidebar-width) - 2rem));
+  margin: 0.75rem;
+  padding: 1.1rem 1.2rem;
+}
+
+.modal-backdrop.modal-backdrop--main .modal.modal--compact {
+  max-width: min(340px, calc(100vw - var(--sidebar-width) - 2.5rem));
+  width: min(92%, calc(100vw - var(--sidebar-width) - 2rem));
+  margin: 0.75rem;
+  padding: 1.15rem 1.25rem;
 }
 
 canvas {
@@ -1159,7 +1195,834 @@ canvas {
   object-fit: cover;
 }
 
-/* Focus page */
+/* Main pane: shared cosmic backdrop (all routes; fixed, does not scroll with content) */
+main.page.page--cosmos {
+  position: relative;
+  isolation: isolate;
+}
+
+.page-cosmos__backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--sidebar-width);
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.page-cosmos__gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse farthest-corner at 100% 100%,
+    color-mix(in srgb, var(--bg) 60%, var(--accent) 40%) 0%,
+    color-mix(in srgb, var(--bg) 40%, #000 60%) 50%,
+    #000 100%
+  );
+}
+
+.page-cosmos__stars {
+  position: absolute;
+  inset: 0;
+}
+
+.page-cosmos__star {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 0 2px 1px rgba(255, 255, 255, 0.35),
+    0 0 7px 2px color-mix(in srgb, var(--accent) 28%, transparent),
+    0 0 16px 4px color-mix(in srgb, var(--accent) 14%, transparent);
+  pointer-events: none;
+}
+
+.page-cosmos__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Focus-session atmosphere: main pane only (audio + visuals; z-index above content, below modals) */
+.atmosphere-fx {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--sidebar-width);
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.atmosphere-fx__layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+ * Glacier Storm — motion stays on the compositor: translate3d + opacity only (no filter/backdrop).
+ * Extra ::before = one slow wind sheet behind the three layers; layer b = soft mist (gust motion, no stripes).
+ */
+.atmosphere-fx--glacier::before {
+  content: '';
+  position: absolute;
+  left: -18%;
+  top: -8%;
+  width: 136%;
+  height: 116%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.42;
+  mix-blend-mode: soft-light;
+  background: linear-gradient(
+    102deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(200, 238, 255, 0.16) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  animation: atmosphere-glacier-wind 26s linear infinite alternate;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--glacier .atmosphere-fx__layer--a {
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 130% 90% at 45% 15%, rgba(180, 235, 255, 0.45), transparent 52%),
+    radial-gradient(ellipse 100% 80% at 85% 95%, rgba(90, 170, 255, 0.28), transparent 48%),
+    radial-gradient(ellipse 120% 100% at 62% 50%, rgba(160, 215, 255, 0.12), transparent 58%);
+  animation: atmosphere-glacier-drift 16s ease-in-out infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--glacier .atmosphere-fx__layer--b {
+  mix-blend-mode: overlay;
+  opacity: 0.32;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse 110% 90% at 25% 45%, rgba(255, 255, 255, 0.1), transparent 55%),
+    radial-gradient(ellipse 100% 85% at 75% 55%, rgba(210, 235, 255, 0.08), transparent 52%);
+  animation: atmosphere-glacier-gust 11s ease-in-out infinite alternate;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--glacier .atmosphere-fx__layer--c {
+  mix-blend-mode: screen;
+  opacity: 0.22;
+  z-index: 3;
+  background: radial-gradient(circle at 28% 38%, rgba(255, 255, 255, 0.35), transparent 42%);
+  animation: atmosphere-glacier-frost 7s ease-in-out infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes atmosphere-glacier-wind {
+  from {
+    transform: translate3d(-5.5%, 0.6%, 0);
+  }
+  to {
+    transform: translate3d(5.5%, -0.6%, 0);
+  }
+}
+
+@keyframes atmosphere-glacier-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.82;
+  }
+  50% {
+    transform: translate3d(-1.8%, 2.5%, 0) scale(1.04);
+    opacity: 0.92;
+  }
+}
+
+@keyframes atmosphere-glacier-gust {
+  from {
+    transform: translate3d(-2.8%, 0, 0);
+  }
+  to {
+    transform: translate3d(2.8%, 0, 0);
+  }
+}
+
+@keyframes atmosphere-glacier-frost {
+  0%,
+  100% {
+    opacity: 0.16;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.32;
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+}
+
+/*
+ * Space Station Low Frequency — porthole viewport, star tile drift, teal/cool-blue nebula, HUD scan.
+ * Compositor-friendly: translate3d / opacity only on layers (no filter animation).
+ */
+.atmosphere-fx--station .atmosphere-fx__porthole {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 12px;
+  bottom: 15px;
+  border-radius: 24px;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.55);
+}
+
+.atmosphere-fx--station .atmosphere-fx__porthole .atmosphere-fx__layer {
+  border-radius: 24px;
+}
+
+.atmosphere-fx--station .atmosphere-fx__porthole-frame {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 5px;
+  bottom: 8px;
+  border-radius: 28px;
+  z-index: 6;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(94, 234, 212, 0.14),
+    inset 0 0 50px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(55, 65, 90, 0.95),
+    0 0 0 5px rgba(26, 31, 46, 0.98),
+    0 0 0 8px rgba(10, 12, 20, 1),
+    0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.atmosphere-fx--station .atmosphere-fx__layer--stars {
+  z-index: 0;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%23ffffff' opacity='0.55'%3E%3Ccircle cx='8' cy='18' r='0.9'/%3E%3Ccircle cx='42' cy='8' r='0.5'/%3E%3Ccircle cx='76' cy='28' r='0.7'/%3E%3Ccircle cx='102' cy='14' r='0.45'/%3E%3Ccircle cx='22' cy='52' r='0.55'/%3E%3Ccircle cx='58' cy='68' r='0.85'/%3E%3Ccircle cx='95' cy='58' r='0.5'/%3E%3Ccircle cx='14' cy='88' r='0.65'/%3E%3Ccircle cx='48' cy='98' r='0.4'/%3E%3Ccircle cx='88' cy='92' r='0.75'/%3E%3Ccircle cx='110' cy='76' r='0.5'/%3E%3Ccircle cx='68' cy='38' r='0.45'/%3E%3C/g%3E%3Cg fill='%235eead4' opacity='0.35'%3E%3Ccircle cx='32' cy='32' r='0.5'/%3E%3Ccircle cx='96' cy='42' r='0.4'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  animation: atmosphere-station-stars-drift 56s linear infinite alternate;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--station .atmosphere-fx__layer--a {
+  mix-blend-mode: soft-light;
+  z-index: 1;
+  opacity: 0.62;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(11, 14, 20, 0.92) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 20% 25%, rgba(94, 234, 212, 0.18), transparent 50%),
+    radial-gradient(ellipse 70% 55% at 85% 35%, rgba(56, 189, 248, 0.1), transparent 48%),
+    radial-gradient(ellipse 120% 80% at 50% 50%, rgba(30, 40, 70, 0.4), transparent 70%);
+  animation: atmosphere-station-nebula 18s ease-in-out infinite alternate;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--station .atmosphere-fx__layer--b {
+  z-index: 2;
+  height: 220%;
+  top: -60%;
+  mix-blend-mode: screen;
+  opacity: 0.1;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 4px,
+    rgba(94, 234, 212, 0.35) 4px,
+    rgba(94, 234, 212, 0.35) 5px
+  );
+  animation: atmosphere-station-scan 14s linear infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.atmosphere-fx--station .atmosphere-fx__layer--c {
+  z-index: 3;
+  mix-blend-mode: overlay;
+  opacity: 0.42;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 30%, rgba(5, 8, 18, 0.5) 100%),
+    radial-gradient(ellipse 100% 40% at 100% 0%, rgba(34, 211, 238, 0.06), transparent 50%),
+    radial-gradient(ellipse 80% 35% at 0% 100%, rgba(94, 234, 212, 0.06), transparent 45%);
+  animation: atmosphere-station-hud-flicker 6s steps(4, end) infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes atmosphere-station-stars-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0);
+  }
+}
+
+@keyframes atmosphere-station-nebula {
+  from {
+    opacity: 0.55;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0.72;
+    transform: translate3d(1.2%, -1.5%, 0) scale(1.02);
+  }
+}
+
+@keyframes atmosphere-station-scan {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 26%, 0);
+  }
+}
+
+@keyframes atmosphere-station-hud-flicker {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  35% {
+    opacity: 0.48;
+  }
+  55% {
+    opacity: 0.32;
+  }
+}
+
+/* Deep Sea Dive — pressure vignette, caustic shimmer, slow swell */
+.atmosphere-fx--deepsea .atmosphere-fx__layer--a {
+  opacity: 0.55;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(0, 140, 180, 0.35), transparent 55%),
+    radial-gradient(ellipse 90% 85% at 50% 110%, rgba(0, 25, 55, 0.75), transparent 58%);
+  animation: atmosphere-sea-swell 14s ease-in-out infinite;
+}
+
+.atmosphere-fx--deepsea .atmosphere-fx__layer--b {
+  mix-blend-mode: soft-light;
+  opacity: 0.45;
+  background: linear-gradient(
+    185deg,
+    transparent 0%,
+    rgba(0, 220, 230, 0.12) 35%,
+    rgba(0, 100, 160, 0.08) 55%,
+    transparent 80%
+  );
+  background-size: 100% 220%;
+  animation: atmosphere-sea-caustic 8s ease-in-out infinite;
+}
+
+.atmosphere-fx--deepsea .atmosphere-fx__layer--c {
+  opacity: 0.7;
+  background: radial-gradient(ellipse at center, transparent 32%, rgba(0, 5, 24, 0.5) 100%);
+  animation: atmosphere-sea-vignette 9s ease-in-out infinite;
+}
+
+@keyframes atmosphere-sea-swell {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(1.5%, -1%);
+  }
+}
+
+@keyframes atmosphere-sea-caustic {
+  0%,
+  100% {
+    background-position: 0% 0%;
+    opacity: 0.38;
+  }
+  50% {
+    background-position: 0% 85%;
+    opacity: 0.55;
+  }
+}
+
+@keyframes atmosphere-sea-vignette {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere-fx__layer {
+    animation: none !important;
+  }
+
+  .atmosphere-fx--glacier::before {
+    animation: none !important;
+  }
+
+  .atmosphere-fx--station .atmosphere-fx__layer--stars {
+    animation: none !important;
+  }
+
+  [data-focus-atmosphere='station'] .stardust-pill::after,
+  [data-focus-atmosphere='station'] .focus-run-orbit::after {
+    animation: none !important;
+  }
+
+  [data-focus-atmosphere='deepsea'] .stardust-pill::after,
+  [data-focus-atmosphere='deepsea'] .focus-run-orbit::after {
+    animation: none !important;
+  }
+}
+
+/*
+ * Glacier Storm — UI hoarfrost (CSS-only: gradients + mask, pointer-events none).
+ * No backdrop-filter / blur on scroll surfaces; no per-frame SVG noise; static ::after overlays.
+ */
+[data-focus-atmosphere='glacier'] .sidebar {
+  border-right-color: rgba(170, 228, 255, 0.38);
+  box-shadow:
+    inset -1px 0 0 rgba(210, 248, 255, 0.2),
+    inset -28px 0 56px rgba(0, 55, 85, 0.18);
+}
+
+[data-focus-atmosphere='glacier'] .sidebar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.62;
+  mix-blend-mode: soft-light;
+  background:
+    repeating-radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.06) 0 0.35px, transparent 0.4px 9px),
+    radial-gradient(ellipse 95% 85% at 0% 45%, rgba(220, 248, 255, 0.55), transparent 48%),
+    radial-gradient(ellipse 90% 80% at 100% 55%, rgba(200, 235, 255, 0.22), transparent 42%),
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(230, 252, 255, 0.2), transparent 50%);
+  mask-image: radial-gradient(ellipse 72% 78% at 50% 45%, transparent 18%, black 96%);
+  -webkit-mask-image: radial-gradient(ellipse 72% 78% at 50% 45%, transparent 18%, black 96%);
+}
+
+[data-focus-atmosphere='glacier'] .stardust-pill {
+  border-color: rgba(175, 230, 255, 0.48);
+  box-shadow:
+    0 0 0 1px rgba(200, 240, 255, 0.12),
+    0 4px 28px rgba(60, 140, 190, 0.16),
+    inset 0 0 32px rgba(200, 240, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-focus-atmosphere='glacier'] .nav-link.active {
+  border-color: rgba(160, 220, 250, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(190, 235, 255, 0.12),
+    0 0 20px rgba(100, 190, 240, 0.12);
+}
+
+[data-focus-atmosphere='glacier'] .brand {
+  text-shadow: 0 0 18px rgba(160, 220, 255, 0.25);
+}
+
+[data-focus-atmosphere='glacier'] main.page .card {
+  position: relative;
+  border-color: rgba(165, 225, 248, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(210, 245, 255, 0.1),
+    0 6px 36px rgba(40, 120, 180, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-focus-atmosphere='glacier'] main.page .card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.68;
+  mix-blend-mode: soft-light;
+  background:
+    repeating-radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.055) 0 0.35px, transparent 0.45px 12px),
+    repeating-radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.04) 0 0.3px, transparent 0.4px 10px),
+    radial-gradient(ellipse 125% 95% at 50% 0%, rgba(232, 252, 255, 0.28), transparent 44%),
+    radial-gradient(ellipse 100% 88% at 0% 50%, rgba(215, 245, 255, 0.42), transparent 40%),
+    radial-gradient(ellipse 100% 88% at 100% 50%, rgba(215, 245, 255, 0.42), transparent 40%),
+    radial-gradient(ellipse 95% 85% at 50% 100%, rgba(190, 235, 255, 0.3), transparent 42%);
+  mask-image: radial-gradient(ellipse 78% 74% at 50% 46%, transparent 20%, black 100%);
+  -webkit-mask-image: radial-gradient(ellipse 78% 74% at 50% 46%, transparent 20%, black 100%);
+}
+
+[data-focus-atmosphere='glacier'] main.page .card > * {
+  position: relative;
+  z-index: 2;
+}
+
+[data-focus-atmosphere='glacier'] .modal {
+  position: relative;
+  border-color: rgba(170, 225, 245, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(200, 240, 255, 0.1),
+    0 12px 48px rgba(30, 100, 150, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-focus-atmosphere='glacier'] .modal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+  mix-blend-mode: soft-light;
+  background:
+    radial-gradient(ellipse 110% 90% at 50% 0%, rgba(225, 250, 255, 0.3), transparent 48%),
+    radial-gradient(ellipse 95% 85% at 0% 50%, rgba(205, 240, 255, 0.38), transparent 38%),
+    radial-gradient(ellipse 95% 85% at 100% 50%, rgba(205, 240, 255, 0.38), transparent 38%);
+  mask-image: radial-gradient(ellipse 76% 72% at 50% 48%, transparent 22%, black 100%);
+  -webkit-mask-image: radial-gradient(ellipse 76% 72% at 50% 48%, transparent 22%, black 100%);
+}
+
+[data-focus-atmosphere='glacier'] .modal > * {
+  position: relative;
+  z-index: 2;
+}
+
+[data-focus-atmosphere='glacier'] .focus-card .btn,
+[data-focus-atmosphere='glacier'] .focus-card .focus-field__control {
+  box-shadow: 0 0 0 1px rgba(190, 235, 255, 0.14);
+}
+
+[data-focus-atmosphere='glacier'] .focus-card .btn-danger {
+  box-shadow:
+    0 0 0 1px rgba(255, 160, 170, 0.25),
+    0 0 16px rgba(255, 120, 140, 0.12);
+}
+
+[data-focus-atmosphere='glacier'] .timer-display {
+  text-shadow:
+    0 0 28px rgba(170, 230, 255, 0.35),
+    0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+[data-focus-atmosphere='glacier'] .focus-run-orbit__track {
+  stroke: rgba(175, 230, 255, 0.58);
+}
+
+[data-focus-atmosphere='glacier'] .focus-run-orbit__progress {
+  stroke: rgba(210, 252, 255, 0.95);
+}
+
+[data-focus-atmosphere='glacier'] .focus-run-orbit__disc {
+  border-color: rgba(185, 235, 255, 0.45);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(200, 245, 255, 0.2),
+    0 0 20px rgba(120, 200, 255, 0.15);
+}
+
+/* Space Station Low Frequency — reference palette: #0B0E14 base, #5EEAD4 teal, slate/cyan accents, #EF4444 danger */
+[data-focus-atmosphere='station'] .nav-link.active {
+  background: rgba(94, 234, 212, 0.1);
+  color: #5eead4;
+  border: 1px solid #5eead4;
+  box-shadow:
+    0 0 20px rgba(94, 234, 212, 0.32),
+    inset 0 0 16px rgba(94, 234, 212, 0.06);
+}
+
+[data-focus-atmosphere='station'] .nav-link.active .nav-link__icon {
+  color: #5eead4;
+  opacity: 1;
+}
+
+[data-focus-atmosphere='station'] .stardust-pill {
+  position: relative;
+  background: rgba(11, 14, 20, 0.78);
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.18),
+    0 0 20px rgba(94, 234, 212, 0.22),
+    0 0 44px rgba(94, 234, 212, 0.1),
+    inset 0 1px 0 rgba(94, 234, 212, 0.08);
+}
+
+[data-focus-atmosphere='station'] .stardust-pill::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    0 0 28px rgba(94, 234, 212, 0.38),
+    0 0 52px rgba(94, 234, 212, 0.15);
+  animation: station-plasma-pulse 4.2s ease-in-out infinite;
+}
+
+[data-focus-atmosphere='station'] .stardust-pill__row,
+[data-focus-atmosphere='station'] .stardust-pill__sub {
+  position: relative;
+  z-index: 1;
+}
+
+[data-focus-atmosphere='station'] .stardust-pill__icon,
+[data-focus-atmosphere='station'] .stardust-pill strong {
+  color: #5eead4;
+}
+
+@keyframes station-plasma-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+[data-focus-atmosphere='station'] .btn-primary {
+  background: linear-gradient(135deg, #5eead4 0%, #14b8a6 52%, #0d9488 100%);
+  border-color: rgba(94, 234, 212, 0.55);
+  color: #0b0e14;
+  font-weight: 600;
+  box-shadow: 0 0 22px rgba(94, 234, 212, 0.28);
+}
+
+[data-focus-atmosphere='station'] .btn.btn-danger {
+  border-color: #ef4444;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.09);
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.4),
+    0 0 18px rgba(239, 68, 68, 0.3);
+}
+
+[data-focus-atmosphere='station'] main.page .card {
+  background: rgba(11, 14, 20, 0.82);
+  border-color: rgba(94, 234, 212, 0.22);
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.06),
+    0 8px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(94, 234, 212, 0.05);
+}
+
+[data-focus-atmosphere='station'] .modal {
+  background: rgba(11, 14, 20, 0.92);
+  border-color: rgba(94, 234, 212, 0.22);
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(94, 234, 212, 0.08);
+}
+
+[data-focus-atmosphere='station'] .timer-display {
+  text-shadow: 0 0 22px rgba(94, 234, 212, 0.22);
+}
+
+[data-focus-atmosphere='station'] .focus-run-orbit {
+  isolation: isolate;
+}
+
+[data-focus-atmosphere='station'] .focus-run-orbit::after {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  box-shadow:
+    0 0 24px rgba(94, 234, 212, 0.14),
+    inset 0 0 28px rgba(15, 23, 42, 0.45),
+    inset 0 0 14px rgba(94, 234, 212, 0.05);
+  animation: station-orbit-ring-pulse 4s ease-in-out infinite;
+}
+
+@keyframes station-orbit-ring-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.02);
+  }
+}
+
+[data-focus-atmosphere='station'] .focus-run-orbit__track {
+  stroke: rgba(71, 85, 105, 0.55);
+}
+
+[data-focus-atmosphere='station'] .focus-run-orbit__progress {
+  stroke: #5eead4;
+}
+
+[data-focus-atmosphere='station'] .focus-run-orbit__disc {
+  border-color: rgba(94, 234, 212, 0.38);
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(94, 234, 212, 0.22),
+    0 0 18px rgba(94, 234, 212, 0.16);
+}
+
+/* Deep Sea Dive — cool abyss palette + pressure glow (same scoped format as Glacier/Station) */
+[data-focus-atmosphere='deepsea'] .nav-link.active {
+  background: rgba(34, 211, 238, 0.08);
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.58);
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.2),
+    inset 0 0 14px rgba(8, 47, 73, 0.28);
+}
+
+[data-focus-atmosphere='deepsea'] .nav-link.active .nav-link__icon {
+  color: #67e8f9;
+  opacity: 1;
+}
+
+[data-focus-atmosphere='deepsea'] .stardust-pill {
+  position: relative;
+  background: rgba(2, 20, 34, 0.82);
+  border: 1px solid rgba(103, 232, 249, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(56, 189, 248, 0.12),
+    0 0 24px rgba(34, 211, 238, 0.18),
+    inset 0 0 30px rgba(8, 47, 73, 0.35);
+}
+
+[data-focus-atmosphere='deepsea'] .stardust-pill::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 120% at 50% 0%, rgba(125, 211, 252, 0.25), transparent 60%),
+    radial-gradient(ellipse 100% 90% at 0% 100%, rgba(34, 211, 238, 0.16), transparent 55%);
+  opacity: 0.72;
+  animation: deepsea-halo 6s ease-in-out infinite;
+}
+
+[data-focus-atmosphere='deepsea'] .stardust-pill__row,
+[data-focus-atmosphere='deepsea'] .stardust-pill__sub {
+  position: relative;
+  z-index: 1;
+}
+
+[data-focus-atmosphere='deepsea'] .stardust-pill__icon,
+[data-focus-atmosphere='deepsea'] .stardust-pill strong {
+  color: #67e8f9;
+}
+
+[data-focus-atmosphere='deepsea'] .btn-primary {
+  background: linear-gradient(135deg, #67e8f9 0%, #0ea5e9 52%, #0369a1 100%);
+  border-color: rgba(103, 232, 249, 0.45);
+  color: #04131f;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.24);
+}
+
+[data-focus-atmosphere='deepsea'] .btn.btn-danger {
+  border-color: rgba(244, 114, 182, 0.7);
+  color: #fbcfe8;
+  background: rgba(190, 24, 93, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(244, 114, 182, 0.35),
+    0 0 16px rgba(244, 114, 182, 0.18);
+}
+
+[data-focus-atmosphere='deepsea'] main.page .card {
+  background: rgba(2, 16, 30, 0.84);
+  border-color: rgba(103, 232, 249, 0.24);
+  box-shadow:
+    0 0 0 1px rgba(56, 189, 248, 0.08),
+    0 10px 42px rgba(0, 8, 20, 0.44),
+    inset 0 1px 0 rgba(125, 211, 252, 0.08);
+}
+
+[data-focus-atmosphere='deepsea'] .modal {
+  background: rgba(3, 16, 30, 0.92);
+  border-color: rgba(103, 232, 249, 0.24);
+  box-shadow:
+    0 0 40px rgba(0, 8, 20, 0.55),
+    0 0 24px rgba(34, 211, 238, 0.1);
+}
+
+[data-focus-atmosphere='deepsea'] .timer-display {
+  text-shadow:
+    0 0 24px rgba(56, 189, 248, 0.36),
+    0 0 4px rgba(125, 211, 252, 0.2);
+}
+
+[data-focus-atmosphere='deepsea'] .focus-run-orbit {
+  isolation: isolate;
+}
+
+[data-focus-atmosphere='deepsea'] .focus-run-orbit::after {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  box-shadow:
+    0 0 26px rgba(34, 211, 238, 0.16),
+    inset 0 0 30px rgba(3, 37, 65, 0.45);
+  animation: deepsea-orbit-pulse 5.5s ease-in-out infinite;
+}
+
+[data-focus-atmosphere='deepsea'] .focus-run-orbit__track {
+  stroke: rgba(8, 47, 73, 0.82);
+}
+
+[data-focus-atmosphere='deepsea'] .focus-run-orbit__progress {
+  stroke: #67e8f9;
+}
+
+[data-focus-atmosphere='deepsea'] .focus-run-orbit__disc {
+  border-color: rgba(103, 232, 249, 0.42);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(125, 211, 252, 0.2),
+    0 0 22px rgba(34, 211, 238, 0.16);
+}
+
+@keyframes deepsea-halo {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.015);
+  }
+}
+
+@keyframes deepsea-orbit-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.84;
+    transform: scale(1.025);
+  }
+}
+
 .focus-page {
   max-width: 560px;
 }
@@ -1231,6 +2094,12 @@ canvas {
   border-radius: 16px;
   border: 1px solid var(--border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Setup only: planet art only, no frame */
+.focus-setup .focus-planet-hero__img {
+  border: none;
+  box-shadow: none;
 }
 
 .focus-run {
@@ -2521,6 +3390,29 @@ canvas {
   font-size: 0.85rem;
   color: var(--muted);
   font-weight: 500;
+}
+
+.planet-modal__galaxy {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 0.85rem;
+  flex-wrap: wrap;
+}
+
+.planet-modal__galaxy-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.planet-modal__galaxy-select {
+  min-width: min(100%, 220px);
+  max-width: 100%;
+  flex: 1 1 180px;
 }
 
 .planet-carousel {

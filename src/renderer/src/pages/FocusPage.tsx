@@ -4,8 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { useAppData } from '../context/DataContext'
 import { useFocusSession } from '../context/FocusSessionContext'
 import { FOCUS_DURATION_MINUTES, FOCUS_START_GRACE_MS } from '../focusConstants'
-import { useAtmosphere } from '../hooks/useAtmosphere'
-import { isPlanetUnlocked, PLANET_OPTIONS } from '../planetCatalog'
+import {
+  isPlanetUnlocked,
+  PLANET_OPTIONS,
+  PLANET_PICKER_GROUP_LABELS,
+  PLANET_PICKER_GROUP_ORDER,
+  type PlanetPickerGroup
+} from '../planetCatalog'
 
 /**
  * Drives re-renders ~1 Hz while a timer is active. Also bumps when the window regains focus /
@@ -159,6 +164,7 @@ export default function FocusPage() {
   const [newTagName, setNewTagName] = useState('')
   const [newTagKind, setNewTagKind] = useState('general')
   const [planetCenterIdx, setPlanetCenterIdx] = useState(0)
+  const [pickerGroup, setPickerGroup] = useState<PlanetPickerGroup>('solar_system')
 
   useEffect(() => {
     if (!data || session) return
@@ -175,10 +181,6 @@ export default function FocusPage() {
     if (!session) return
     setHardcore(session.hardcore)
   }, [session])
-
-  const atmosphereKey = data?.settings.activeAtmosphereKey
-  const atmosphereUnlocked =
-    atmosphereKey && data?.unlockedAtmosphereIds?.includes(atmosphereKey) ? atmosphereKey : undefined
 
   const running = session !== null
   const wallTick = useWallClockTick(running || breakEndsAt !== null)
@@ -198,11 +200,18 @@ export default function FocusPage() {
     clearBreak()
   }, [breakEndsAt, wallTick, clearBreak])
 
-  useAtmosphere(atmosphereUnlocked, running)
+  const carouselPlanets = useMemo(
+    () => PLANET_OPTIONS.filter((p) => p.pickerGroup === pickerGroup),
+    [pickerGroup]
+  )
 
   useEffect(() => {
     if (!planetPickerOpen) return
-    const i = PLANET_OPTIONS.findIndex((p) => p.id === selectedPlanet)
+    const opt = PLANET_OPTIONS.find((p) => p.id === selectedPlanet)
+    const g = opt?.pickerGroup ?? 'solar_system'
+    setPickerGroup(g)
+    const list = PLANET_OPTIONS.filter((p) => p.pickerGroup === g)
+    const i = list.findIndex((p) => p.id === selectedPlanet)
     setPlanetCenterIdx(i >= 0 ? i : 0)
   }, [planetPickerOpen, selectedPlanet])
 
@@ -345,10 +354,11 @@ export default function FocusPage() {
     return `${Math.floor(m / 60)}h ${m % 60}m`
   }
 
-  const nPlanets = PLANET_OPTIONS.length
-  const leftPlanet = PLANET_OPTIONS[(planetCenterIdx - 1 + nPlanets) % nPlanets]
-  const centerPlanet = PLANET_OPTIONS[planetCenterIdx]
-  const rightPlanet = PLANET_OPTIONS[(planetCenterIdx + 1) % nPlanets]
+  const nPlanets = carouselPlanets.length
+  const centerIdx = nPlanets > 0 ? ((planetCenterIdx % nPlanets) + nPlanets) % nPlanets : 0
+  const leftPlanet = nPlanets > 0 ? carouselPlanets[(centerIdx - 1 + nPlanets) % nPlanets] : PLANET_OPTIONS[0]!
+  const centerPlanet = nPlanets > 0 ? carouselPlanets[centerIdx]! : PLANET_OPTIONS[0]!
+  const rightPlanet = nPlanets > 0 ? carouselPlanets[(centerIdx + 1) % nPlanets] : PLANET_OPTIONS[0]!
 
   const activatePlanet = (planetId: string, unlocked: boolean) => {
     if (!unlocked) {
@@ -479,10 +489,28 @@ export default function FocusPage() {
       </div>
 
       {planetPickerOpen && (
-        <div className="modal-backdrop" onClick={() => setPlanetPickerOpen(false)}>
+        <div className="modal-backdrop modal-backdrop--main" onClick={() => setPlanetPickerOpen(false)}>
           <div className="modal planet-modal planet-modal--carousel" onClick={(e) => e.stopPropagation()}>
             <h3 className="planet-modal__title">Choose planet</h3>
             <p className="planet-modal__hint">Locked planets open the Market to unlock them.</p>
+            <label className="planet-modal__galaxy">
+              <span className="planet-modal__galaxy-label">Group</span>
+              <select
+                className="planet-modal__galaxy-select focus-field__control"
+                value={pickerGroup}
+                onChange={(e) => {
+                  setPickerGroup(e.target.value as PlanetPickerGroup)
+                  setPlanetCenterIdx(0)
+                }}
+                aria-label="Planet group"
+              >
+                {PLANET_PICKER_GROUP_ORDER.map((g) => (
+                  <option key={g} value={g}>
+                    {PLANET_PICKER_GROUP_LABELS[g]}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="planet-carousel">
               <button
                 type="button"
@@ -548,8 +576,8 @@ export default function FocusPage() {
       )}
 
       {tagModalOpen && (
-        <div className="modal-backdrop" onClick={() => setTagModalOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-backdrop modal-backdrop--main" onClick={() => setTagModalOpen(false)}>
+          <div className="modal modal--compact" onClick={(e) => e.stopPropagation()}>
             <h3 style={{ marginTop: 0 }}>New tag</h3>
             <label className="focus-modal-field">
               Name
