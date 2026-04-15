@@ -38,6 +38,21 @@ export function AtmosphereFocusLayer() {
     return () => root.removeAttribute('data-focus-atmosphere')
   }, [visual])
 
+  /** Pause CSS atmosphere + decor animations while tab/window is hidden (saves GPU + main thread). */
+  useEffect(() => {
+    const root = document.documentElement
+    const sync = () => {
+      if (document.hidden) root.setAttribute('data-atmosphere-suspend', '1')
+      else root.removeAttribute('data-atmosphere-suspend')
+    }
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    return () => {
+      document.removeEventListener('visibilitychange', sync)
+      root.removeAttribute('data-atmosphere-suspend')
+    }
+  }, [])
+
   if (!visual) return null
 
   const porthole = visual === 'station'

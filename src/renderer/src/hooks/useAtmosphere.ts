@@ -52,7 +52,15 @@ export function useAtmosphere(key: string | undefined, playing: boolean) {
     src.start()
     osc.start()
 
+    const onVisibility = () => {
+      if (document.hidden) void ctx.suspend()
+      else void ctx.resume().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    onVisibility()
+
     return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
       try {
         src.stop()
         osc.stop()
